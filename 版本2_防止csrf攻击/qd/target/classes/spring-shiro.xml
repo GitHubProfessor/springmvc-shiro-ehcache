@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans.xsd"
+    default-lazy-init="true">
+
+    <description>Shiro安全配置</description>
+
+    <!-- spring提供的静态注入的xml配置方式，
+    	此配置等同于SecurityUtils.setSecurityManager(securityManager) 
+   	-->
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="org.apache.shiro.SecurityUtils.setSecurityManager"/>
+        <property name="arguments" ref="securityManager"/>
+    </bean>
+    
+    <!--shiro核心，shiro所有功能都由它来管理。配置shiro必须配置securityManager-->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!--设置自定义Realm-->
+        <property name="realm" ref="dbRealm"/>
+    </bean>
+    
+     <!-- 項目自定义的Realm -->
+    <bean id="dbRealm" class="com.qd.shiro.realm.DbRealm"></bean>
+   
+	<!-- Shiro Filter -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- 安全管理器 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 默认的登陆访问url -->
+        <property name="loginUrl" value="/mvc/login"/>
+        <!-- 登陆成功后跳转的url -->
+        <property name="successUrl" value="/mvc/index"/>
+        <!-- 没有权限跳转的url -->
+        <property name="unauthorizedUrl" value="/view/unauth"/>
+        <property name="filterChainDefinitions">
+            <value>
+                <!-- 
+                    anon  不需要认证
+                    authc 需要认证
+                    user  验证通过或RememberMe登录的都可以
+                -->  
+                 /style/** = anon
+                /static/** = anon
+                /backgd/system/code/** = anon 
+                /backgd/system/login/** = anon 
+                /** = user
+            </value>
+        </property>
+    </bean>
+</beans>
